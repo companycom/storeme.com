@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aldi Grup - Pusat Jual & Titip Barang</title>
+    <style>
+        /* --- RESET & VARIABEL --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        :root {
+            --primary-dark: #1e2a45;
+            --primary-light: #f4f6f9;
+            --accent-gold: #d4a54a;
+            --text-dark: #333;
+            --text-gray: #666;
+            --border-color: #ddd;
+            --error-color: #dc3545;
+            --ig-gradient: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            --wa-green: #25D366;
+            --shopee-orange: #ee4d2d;
+        }
+        body { background-color: var(--primary-light); color: var(--text-dark); }
+        a { text-decoration: none; color: inherit; }
+
+        /* --- TOP BAR & HEADER --- */
+        .top-bar { background-color: var(--primary-dark); color: #fff; font-size: 13px; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .top-bar .social-links a { color: var(--accent-gold); margin-left: 15px; font-weight: 500; }
+        
+        .header { background-color: #fff; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .logo-container { display: flex; align-items: center; gap: 15px; cursor: pointer; }
+        .logo-box { background-color: var(--primary-dark); color: var(--accent-gold); font-weight: bold; font-size: 24px; width: 45px; height: 45px; display: flex; justify-content: center; align-items: center; border-radius: 8px; }
+        .header-text h1 { font-size: 18px; color: var(--primary-dark); }
+        .header-text p { font-size: 11px; color: var(--text-gray); letter-spacing: 1px; text-transform: uppercase; }
+        
+        .nav-menu { display: flex; gap: 20px; font-weight: 600; color: var(--primary-dark); }
+        .nav-menu a { padding: 10px; transition: 0.3s; cursor: pointer; }
+        .nav-menu a:hover, .nav-menu a.active { color: var(--shopee-orange); border-bottom: 2px solid var(--shopee-orange); }
+
+        /* --- HALAMAN BERANDA --- */
+        .page-section { display: none; } 
+        .page-section.active { display: block; } 
+
+        .shopee-container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+        
+        /* Banner */
+        .banner { background: linear-gradient(to right, #1e2a45, #2a3c63); border-radius: 10px; padding: 40px; color: white; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .banner h2 { font-size: 32px; margin-bottom: 10px; }
+        .banner p { font-size: 16px; opacity: 0.9; }
+        .banner-btn { background: var(--accent-gold); color: var(--primary-dark); padding: 12px 25px; border-radius: 25px; font-weight: bold; border: none; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        .banner-btn:hover { transform: scale(1.05); }
+
+        /* Grid Produk */
+        .section-title { font-size: 20px; font-weight: 600; margin-bottom: 15px; color: var(--primary-dark); display: flex; align-items: center; gap: 10px; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .product-card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: 0.3s; border: 1px solid transparent; display: flex; flex-direction: column; }
+        .product-card:hover { transform: translateY(-5px); border-color: var(--shopee-orange); box-shadow: 0 5px 15px rgba(238,77,45,0.2); }
+        
+        /* Gambar Produk */
+        .product-img-wrapper { width: 100%; height: 180px; background-color: #eee; overflow: hidden; }
+        .product-img-wrapper img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        
+        .product-info { padding: 15px; display: flex; flex-direction: column; flex: 1; }
+        .product-title { font-size: 14px; font-weight: 600; margin-bottom: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px;}
+        .product-price { color: var(--shopee-orange); font-weight: bold; font-size: 17px; margin-bottom: 10px; }
+        
+        /* Info Penjual */
+        .seller-info { font-size: 12px; color: var(--text-gray); border-top: 1px dashed var(--border-color); padding-top: 10px; margin-top: auto; }
+        .seller-info div { margin-bottom: 3px; display: flex; align-items: center; gap: 5px; }
+        .seller-info .seller-name { font-weight: 600; color: var(--text-dark); }
+        .seller-info a { color: var(--wa-green); font-weight: 600; }
+        .seller-info a:hover { text-decoration: underline; }
+
+        /* Tampilan Kosong */
+        .empty-state { text-align: center; padding: 60px 20px; background: #fff; border-radius: 10px; border: 1px dashed var(--border-color); margin-top: 20px; grid-column: 1 / -1; }
+        .empty-state .icon { font-size: 60px; margin-bottom: 15px; }
+        .empty-state h3 { color: var(--primary-dark); font-size: 20px; margin-bottom: 10px; }
+        .empty-state p { color: var(--text-gray); font-size: 14px; margin-bottom: 20px; }
+
+        /* --- HALAMAN FORM --- */
+        .hero { background-color: var(--primary-dark); color: #fff; padding: 50px 20px 80px; }
+        .container-form { max-width: 1100px; margin: 0 auto; }
+        .badge-hero { display: inline-block; border: 1px solid rgba(255,255,255,0.3); padding: 5px 15px; border-radius: 20px; font-size: 12px; text-transform: uppercase; margin-bottom: 20px; color: #ddd; }
+        .hero h2 { font-size: 36px; margin-bottom: 15px; line-height: 1.2; }
+        .hero h2 span { color: var(--accent-gold); }
+        .hero p { font-size: 16px; line-height: 1.6; color: #ddd; max-width: 800px; }
+
+        .main-content { display: flex; gap: 30px; margin-top: -40px; padding: 0 20px 60px; align-items: flex-start; max-width: 1100px; margin-left: auto; margin-right: auto; }
+        .form-card { background: #fff; border-radius: 10px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); flex: 2; width: 100%; }
+        .card-header { margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); }
+        .card-header h3 { font-size: 22px; color: var(--primary-dark); margin-bottom: 5px; }
+        .card-header p { color: var(--text-gray); font-size: 14px; }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+        .form-group label span { color: var(--error-color); }
+        .form-group input, .form-group select, .form-group textarea { padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; outline: none; transition: border-color 0.3s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent-gold); }
+        .full-width { grid-column: span 2; }
+        
+        .btn-submit-wa { background-color: var(--wa-green); color: #fff; border: none; padding: 15px; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 10px; transition: background-color 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-submit-wa:hover { background-color: #1ebe5d; }
+
+        .contact-card { background: #fff; border-radius: 10px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); flex: 1; min-width: 300px; }
+        .contact-item { display: flex; align-items: center; gap: 15px; padding: 20px 0; border-bottom: 1px solid var(--border-color); }
+        .contact-item:last-child { border-bottom: none; }
+        .icon-box { width: 50px; height: 50px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 24px; color: #fff; }
+        .icon-ig { background: var(--ig-gradient); }
+        .icon-wa { background: var(--wa-green); }
+        .contact-info-text h4 { font-size: 12px; color: var(--text-gray); text-transform: uppercase; margin-bottom: 3px; }
+        .contact-info-text p { font-size: 16px; font-weight: 600; color: var(--primary-dark); }
+        .contact-info-text small { color: var(--text-gray); font-size: 12px; }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 900px) {
+            .main-content { flex-direction: column; }
+            .contact-card { width: 100%; }
+            .banner { flex-direction: column; text-align: center; gap: 20px; }
+            .header { flex-direction: column; gap: 15px; }
+        }
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+            .hero h2 { font-size: 28px; }
+            .banner h2 { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div>
+            <span>📞 085731569186</span>
+            <span style="margin-left:15px;">✉️ afiransyah63@gmail.com</span>
+        </div>
+        <div class="social-links">
+            <a href="#">DM Instagram</a> | <a href="#">WhatsApp</a>
+        </div>
+    </div>
+
+    <!-- Header / Navbar -->
+    <header class="header">
+        <div class="logo-container" onclick="showPage('home')">
+            <div class="logo-box">AG</div>
+            <div class="header-text">
+                <h1>Aldi Grup</h1>
+                <p>Pusat Jual & Titip Barang</p>
+            </div>
+        </div>
+        <nav class="nav-menu">
+            <a onclick="showPage('home')" id="nav-home" class="active">Beranda</a>
+            <a onclick="showPage('form')" id="nav-form">Form Pengajuan</a>
+        </nav>
+    </header>
+
+    <!-- ================= HALAMAN BERANDA ================= -->
+    <section id="page-home" class="page-section active">
+        <div class="shopee-container">
+            
+            <!-- Banner Promo -->
+            <div class="banner">
+                <div>
+                    <h2>Mau Jual Barang Bekas atau Titip Jual?</h2>
+                    <p>Proses cepat, aman, dan langsung diurus oleh Admin Aldi Grup.</p>
+                </div>
+                <button class="banner-btn" onclick="showPage('form')">Ajukan Sekarang 🚀</button>
+            </div>
+
+            <!-- Judul List Produk & Info Jumlah -->
+            <div class="section-title" id="produkTitle">🔥 Produk Tersedia</div>
+
+            <!-- Container Tempat Produk Dirender -->
+            <div id="productContainer" class="product-grid">
+                <!-- Produk akan disuntikkan ke sini lewat JavaScript -->
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- ================= HALAMAN FORM PENGAJUAN ================= -->
+    <section id="page-form" class="page-section">
+        <div class="hero">
+            <div class="container-form">
+                <div class="badge-hero">Layanan Cepat & Responsif</div>
+                <h2>Pengajuan & Pertanyaan <span>Aldi Grup</span></h2>
+                <p>Isi formulir, lalu klik tombol kirim di bawah — pesan Anda akan <strong>langsung diarahkan</strong> ke WhatsApp Admin kami.</p>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="form-card">
+                <div class="card-header">
+                    <h3>📝 Formulir Pengajuan</h3>
+                    <p>Isi data dengan lengkap agar tim kami dapat membantu secepatnya.</p>
+                </div>
+
+                <form id="waForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Nama Lengkap <span>*</span></label>
+                            <input type="text" id="nama" placeholder="Contoh: Budi Santoso" required>
+                        </div>
+                        <div class="form-group">
+                            <label>No. HP / WhatsApp <span>*</span></label>
+                            <input type="tel" id="nohp" placeholder="08xxxxxxxxxx" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Jenis Pengajuan <span>*</span></label>
+                            <select id="jenis" required>
+                                <option value="">— Pilih Jenis —</option>
+                                <option value="Jual Barang Pribadi">Jual Barang Pribadi</option>
+                                <option value="Titip Jual (Konsinyasi)">Titip Jual (Konsinyasi)</option>
+                                <option value="Tanya-tanya dulu">Tanya-tanya dulu</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Urgensi <span>*</span></label>
+                            <select id="urgensi" required>
+                                <option value="">— Pilih Urgensi —</option>
+                                <option value="Biasa">Biasa</option>
+                                <option value="Penting">Penting</option>
+                                <option value="Sangat Penting">Sangat Penting</option>
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Detail Barang / Pesan <span>*</span></label>
+                            <textarea id="pesan" rows="4" placeholder="Jelaskan kondisi barang, harga yang diinginkan, atau pertanyaan Anda..." required></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <button type="submit" class="btn-submit-wa">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                                Kirim via WhatsApp
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="contact-card">
+                <div class="card-header">
+                    <h3>Kontak Admin</h3>
+                    <p>Pilih channel sesuai kebutuhan</p>
+                </div>
+                <a href="https://instagram.com/aal911_" target="_blank" class="contact-item">
+                    <div class="icon-box icon-ig">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                    </div>
+                    <div class="contact-info-text">
+                        <h4>Instagram DM</h4>
+                        <p>@aal911_</p>
+                        <small>Respons tercepat</small>
+                    </div>
+                </a>
+                <a href="https://wa.me/6285731569186" target="_blank" class="contact-item">
+                    <div class="icon-box icon-wa">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                    </div>
+                    <div class="contact-info-text">
+                        <h4>WhatsApp</h4>
+                        <p>085731569186</p>
+                        <small>Chat langsung</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= JAVASCRIPT ================= -->
+    <script>
+        /* =====================================================================
+           DATABASE PRODUK (FORMAT: jualan1.jpg s/d jualan1000.jpg)
+           =====================================================================
+           
+           CARA MENGISI:
+           1. Buat folder "gambar" di sebelah file index.html
+           2. Simpan foto Anda dengan nama jualan1.jpg, jualan2.jpg, dst.
+           3. Isi data di bawah ini. Format nomor urut otomatis.
+           
+           CONTOH: Jika Anda menulis data pertama, otomatis akan memanggil
+                   gambar "gambar/jualan1.jpg". Data kedua -> jualan2.jpg.
+           
+           FORMAT DATA:
+           {
+               judul: "Nama Barang",
+               harga: "Rp 1.000.000",  // (Opsional, isi "-" jika tidak mau tampilkan harga)
+               penjual: "Nama Penjual",
+               kontak: "08123456789",  // Nomor WA/HP Penjual
+               alamat: "Kota/Kecamatan"
+           }
+           
+           JANGAN LUPA BERI KOMA (,) DI AKHIR SETIAP KURUNG {}
+           ===================================================================== */
+        
+        const daftarProduk = [
+            // ===== COPY DARI SINI UNTUK MENAMBAH DATA =====
+            // {
+            //     judul: "iPhone 13 Pro Max 256GB Fullset",
+            //     harga: "Rp 10.500.000",
+            //     penjual: "Budi Santoso",
+            //     kontak: "081234567890",
+            //     alamat: "Jakarta Selatan"
+            // },
+            // {
+            //     judul: "Nike Air Force 1 Size 42 Original",
+            //     harga: "Rp 950.000",
+            //     penjual: "Siti Aminah",
+            //     kontak: "082198765432",
+            //     alamat: "Bandung"
+            // },
+            // ===== SAMPAI SINI =====
+        ];
+
+        // Fungsi Render Produk ke Halaman
+        function renderProduk() {
+            const container = document.getElementById('productContainer');
+            const title = document.getElementById('produkTitle');
+            
+            // Jika data kosong -> tampilkan empty state
+            if (daftarProduk.length === 0) {
+                title.innerHTML = `🔥 Produk Tersedia (0 Barang)`;
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <h3>Belum Ada Produk</h3>
+                        <p>Saat ini belum ada barang yang dijual atau dititipkan.<br>Silakan kembali lagi nanti atau ajukan barang Anda!</p>
+                        <button class="banner-btn" onclick="showPage('form')">Mulai Ajukan Barang</button>
+                    </div>
+                `;
+                return;
+            }
+
+            // Jika ada data -> render semua produk
+            title.innerHTML = `🔥 Produk Tersedia (${daftarProduk.length} Barang)`;
+            
+            let htmlContent = '';
+            
+            // Looping semua data. "index" dimulai dari 0, jadi nomor gambar = index + 1
+            daftarProduk.forEach((produk, index) => {
+                const nomorGambar = index + 1; // jadi jualan1.jpg, jualan2.jpg, dst.
+                const linkGambar = `gambar/jualan${nomorGambar}.jpg`;
+                
+                // Format nomor kontak ke link WhatsApp (ubah 08xxx jadi 628xxx)
+                let kontakWA = produk.kontak.replace(/^0/, '62').replace(/[^0-9]/g, '');
+                const linkWA = `https://wa.me/${kontakWA}?text=Halo%20${encodeURIComponent(produk.penjual)},%20saya%20tertarik%20dengan%20${encodeURIComponent(produk.judul)}%20di%20Aldi%20Grup.`;
+
+                htmlContent += `
+                    <div class="product-card">
+                        <div class="product-img-wrapper">
+                            <img src="${linkGambar}" alt="${produk.judul}" onerror="this.src='https://via.placeholder.com/300x300?text=Foto+Belum+Ada'">
+                        </div>
+                        <div class="product-info">
+                            <div class="product-title">${produk.judul}</div>
+                            <div class="product-price">${produk.harga || '-'}</div>
+                            <div class="seller-info">
+                                <div>👤 <span class="seller-name">${produk.penjual}</span></div>
+                                <div>📍 ${produk.alamat}</div>
+                                <div>📱 <a href="${linkWA}" target="_blank">Chat Penjual</a></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = htmlContent;
+        }
+
+        // Jalankan render saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', renderProduk);
+
+
+        /* =====================================================================
+           FUNGSI NAVIGASI & FORM PENGAJUAN
+           ===================================================================== */
+        
+        // Navigasi Halaman
+        function showPage(pageId) {
+            document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById('page-' + pageId).classList.add('active');
+            
+            document.getElementById('nav-home').classList.remove('active');
+            document.getElementById('nav-form').classList.remove('active');
+            document.getElementById('nav-' + pageId).classList.add('active');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Kirim Form Pengajuan ke WA Admin (Aldi Grup)
+        document.getElementById('waForm').addEventListener('submit', function(e) {
+            e.preventDefault(); 
+
+            const nama = document.getElementById('nama').value;
+            const nohp = document.getElementById('nohp').value;
+            const jenis = document.getElementById('jenis').value;
+            const urgensi = document.getElementById('urgensi').value;
+            const pesan = document.getElementById('pesan').value;
+
+            const noWAAdmin = "6285731569186"; 
+
+            const textPesan = 
+`*PENGAJUAN BARU - ALDI GRUP*%0A
+---------------------------%0A
+*Nama:* ${nama}%0A
+*No HP:* ${nohp}%0A
+*Jenis:* ${jenis}%0A
+*Urgensi:* ${urgensi}%0A
+---------------------------%0A
+*Detail/Pesan:*%0A
+${pesan}`;
+
+            const urlWA = `https://wa.me/${noWAAdmin}?text=${textPesan}`;
+            window.open(urlWA, '_blank');
+            this.reset();
+        });
+    </script>
+</body>
+</html>
